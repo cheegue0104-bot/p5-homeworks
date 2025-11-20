@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>P5.js Homeworks – 1,4 / 2,3</title>
+  <!-- p5.js 및 p5.gif 로드 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <script src="https://unpkg.com/p5.gif/dist/p5.gif.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f5;
+    }
+    header {
+      padding: 16px 24px;
+      background: #222;
+      color: #fff;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    header p {
+      margin: 4px 0 0;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 8px;
+      padding: 8px;
+      height: calc(100vh - 80px);
+      box-sizing: border-box;
+    }
+    .cell {
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #ddd;
+    }
+    .cell-header {
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      background: #fafafa;
+      border-bottom: 1px solid #eee;
+    }
+    .canvas-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .canvas-wrapper > div {
+      /* p5 캔버스가 들어갈 컨테이너 */
+      display: inline-block;
+    }
+    .cell-footer {
+      padding: 4px 10px;
+      font-size: 11px;
+      text-align: right;
+      color: #666;
+      background: #fafafa;
+      border-top: 1px solid #eee;
+    }
+    .hint {
+      font-size: 11px;
+      color: #888;
+      padding: 2px 10px 6px;
+      border-top: 1px solid #eee;
+      background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>P5.js Homeworks</h1>
+    <p>과제 1·4 / 2·3 순으로 배치된 최종 제출 페이지 (GitHub Pages용 단일 파일)</p>
+  </header>
+
+  <div class="grid">
+    <!-- 1행: 과제 1, 과제 4 -->
+    <div class="cell">
+      <div class="cell-header">Homework 1 – Static Dora Character</div>
+      <div class="canvas-wrapper">
+        <div id="sketch1"></div>
+      </div>
+      <div class="cell-footer">1번 과제 (정적 이미지)</div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-header">Homework 4 – Animated Dora Character</div>
+      <div class="canvas-wrapper">
+        <div id="sketch4"></div>
+      </div>
+      <div class="hint">키보드 G : 10초 GIF 저장 (p5.gif)</div>
+      <div class="cell-footer">4번 과제 (애니메이션)</div>
+    </div>
+
+    <!-- 2행: 과제 2, 과제 3 -->
+    <div class="cell">
+      <div class="cell-header">Homework 2 – Static Human Caricature</div>
+      <div class="canvas-wrapper">
+        <div id="sketch2"></div>
+      </div>
+      <div class="cell-footer">2번 과제 (정적 이미지)</div>
+    </div>
+
+    <div class="cell">
+      <div class="cell-header">Homework 3 – Interactive Human Caricature</div>
+      <div class="canvas-wrapper">
+        <div id="sketch3"></div>
+      </div>
+      <div class="hint">
+        마우스: 시선/오른팔 · ←/→ 고개 · ↑/↓ 입 · Space 점프 · G: 10초 GIF
+      </div>
+      <div class="cell-footer">3번 과제 (인터랙티브)</div>
+    </div>
+  </div>
+
+  <!-- 여기부터 네 개 스케치를 p5 인스턴스 모드로 구현 -->
+  <script>
+    /***********************
+     * Homework 1 – Static Dora
+     ***********************/
+    const sketch1 = (p) => {
+      let SIZE = 300;
+
+      p.setup = () => {
+        p.pixelDensity(1);
+        p.createCanvas(300, 300);
+        p.colorMode(p.HSB, 360, 100, 100, 100);
+        p.noLoop(); // 정적 이미지
+      };
+
+      p.draw = () => {
+        // 배경 그라데이션 (고정 색)
+        let hue1 = 210;
+        let hue2 = 260;
+        let c1 = p.color(hue1, 40, 95);
+        let c2 = p.color(hue2, 40, 95);
+        for (let y = 0; y < p.height; y++) {
+          let amt = y / (p.height - 1);
+          p.stroke(p.lerpColor(c1, c2, amt));
+          p.line(0, y, p.width, y);
+        }
+
+        p.push();
+        p.translate(p.width / 2, p.height / 2);
+        p.scale(1.0);
+
+        // 머리 테두리
+        let headHue = 210;
+        p.stroke(0);
+        p.strokeWeight(6);
+        p.fill(headHue, 76, 100);
+        p.circle(0, 0, SIZE);
+
+        // 얼굴 흰 부분
+        p.fill(0, 0, 100);
+        p.ellipse(0, SIZE * 0.14, SIZE * 0.80, SIZE * 0.68);
+
+        drawEyes();
+        drawNose();
+        drawWhiskers();
+        drawCollarAndBell();
+        drawMouth();
+
+        p.pop();
+      };
+
+      function drawEyes() {
+        // 항상 눈 뜬 상태
+        let isBlinking = false;
+
+        p.stroke(0);
+        p.strokeWeight(5);
+        p.fill(0, 0, 100);
+        let eyeW = SIZE * 0.22, eyeH = SIZE * 0.30;
+        let eyeY = -SIZE * 0.12;
+        let eyeDX = SIZE * 0.115;
+        let blinkScale = isBlinking ? 0.08 : 1.0;
+        p.ellipse(-eyeDX, eyeY, eyeW, eyeH * blinkScale);
+        p.ellipse( eyeDX, eyeY, eyeW, eyeH * blinkScale);
+
+        // 동공
+        p.fill(0, 0, 0);
+        let pupilR = SIZE * 0.05;
+        p.circle(-eyeDX, eyeY, pupilR);
+        p.circle( eyeDX, eyeY, pupilR);
+      }
+
+      function drawNose() {
+        let noseBase = SIZE * 0.12;
+        let noseR = noseBase;
+        p.fill(0, 84, 90);
+        p.stroke(0);
+        p.strokeWeight(5);
+        p.circle(0, -SIZE * 0.03, noseR);
+
+        // 코 하이라이트
+        p.noStroke();
+        p.fill(0, 0, 100, 90);
+        p.ellipse(noseR * 0.28, -SIZE * 0.05, noseR * 0.32, noseR * 0.20);
+
+        // 콧줄
+        p.stroke(0);
+        p.strokeWeight(5);
+        p.line(0, 0, 0, SIZE * 0.21);
+      }
+
+      function drawWhiskers() {
+        let wig = 0;
+        p.stroke(0);
+        p.strokeWeight(5);
+
+        // 왼쪽 수염
+        p.line(-SIZE * 0.06, SIZE * 0.02, -SIZE * 0.30, -SIZE * 0.02 + wig * 0.2);
+        p.line(-SIZE * 0.06, SIZE * 0.09, -SIZE * 0.30, SIZE * 0.09 + wig * 0.4);
+        p.line(-SIZE * 0.06, SIZE * 0.16, -SIZE * 0.30, SIZE * 0.22 + wig * 0.6);
+        // 오른쪽 수염
+        p.line( SIZE * 0.06, SIZE * 0.02,  SIZE * 0.30, -SIZE * 0.02 - wig * 0.2);
+        p.line( SIZE * 0.06, SIZE * 0.09,  SIZE * 0.30, SIZE * 0.09 - wig * 0.4);
+        p.line( SIZE * 0.06, SIZE * 0.16,  SIZE * 0.30, SIZE * 0.22 - wig * 0.6);
+      }
+
+      function drawMouth() {
+        p.noFill();
+        p.stroke(0);
+        p.strokeWeight(5);
+        let smileY = SIZE * 0.21;
+        p.arc(0, smileY, SIZE * 0.52, SIZE * 0.32, 0.15 * p.PI, 0.85 * p.PI);
+      }
+
+      function drawCollarAndBell() {
+        let collarCol = p.color(0, 80, 90);
+        p.stroke(0);
+        p.strokeWeight(6);
+        p.fill(collarCol);
+        p.rectMode(p.CENTER);
+        p.rect(0, SIZE * 0.39, SIZE * 0.86, SIZE * 0.11, SIZE * 0.06);
+
+        let swing = 0;
+        p.push();
+        p.translate(swing, 0);
+        let bellHue = 50;
+        p.fill(bellHue, 90, 100);
+        p.ellipse(0, SIZE * 0.47, SIZE * 0.15, SIZE * 0.12);
+        p.circle(0, SIZE * 0.47, SIZE * 0.12);
+
+        p.strokeWeight(4);
+        p.stroke(0);
+        p.line(0, SIZE * 0.435, 0, SIZE * 0.505);
+
+        p.noStroke();
+        p.fill(0, 0, 0);
+        p.circle(0, SIZE * 0.505, SIZE * 0.03);
+        p.pop();
+      }
+    };
+
+    /****************************
+     * Homework 2 – Static Human
+     ****************************/
+    const sketch2 = (p) => {
+      let headX, headY;
+      let tilt = 0;
+      let mouthOpen = 18;
+      let waveArm = 0;
+
+      p.setup = () => {
+        p.createCanvas(480, 480);
+        p.frameRate(24);
+        headX = p.width / 2;
+        headY = p.height * 0.55;
+        p.noLoop(); // 정적 이미지
+      };
+
+      p.draw = () => {
+        p.background(242, 246, 255);
+
+        // 바닥
+        p.noStroke();
+        p.fill(224, 232, 240);
+        p.rect(0, p.height * 0.82, p.width, p.height * 0.18);
+
+        p.push();
+        p.translate(headX, headY);
+        p.rotate(p.radians(tilt));
+        drawBody();
+        drawNeck();
+        drawHead();
+        drawLeftArm();
+        drawRightArm();
+        p.pop();
+      };
+
+      function drawBody() {
+        p.rectMode(p.CENTER);
+        p.noStroke();
+        p.fill(84, 140, 255);
+        p.rect(0, 150, 150, 170, 22);
+
+        p.fill(250);
+        p.quad(-35, 110, 35, 110, 10, 140, -10, 140);
+
+        p.fill(230);
+        p.rect(0, 150, 8, 150, 3);
+
+        p.fill(210);
+        p.ellipse(0, 120, 8, 8);
+        p.ellipse(0, 150, 8, 8);
+        p.ellipse(0, 180, 8, 8);
+      }
+
+      function drawNeck() {
+        p.fill(245, 214, 188);
+        p.rectMode(p.CENTER);
+        p.rect(0, 95, 42, 28, 8);
+      }
+
+      function drawHead() {
+        p.noStroke();
+        p.fill(247, 222, 198);
+        p.ellipse(0, 22, 140, 165);
+
+        p.fill(247, 222, 198);
+        p.ellipse(-70, 28, 22, 28);
+        p.ellipse(70, 28, 22, 28);
+
+        // 머리카락
+        p.noStroke();
+        p.fill(40, 40, 50);
+        p.arc(0, -6, 150, 120, p.PI, p.TWO_PI);
+        p.quad(-60, -4, 60, -4, 50, 10, -50, 10);
+
+        // 하이라이트
+        p.stroke(255, 255, 255, 40);
+        p.strokeWeight(2);
+        p.line(0, -8, 0, 2);
+
+        // 눈
+        const eyeY = 6;
+        p.noStroke();
+        p.fill(255);
+        p.ellipse(-26, eyeY, 30, 20);
+        p.ellipse(26, eyeY, 30, 20);
+
+        p.fill(30);
+        p.ellipse(-26, eyeY, 10, 10);
+        p.ellipse(26, eyeY, 10, 10);
+
+        // 눈썹
+        p.stroke(30);
+        p.strokeWeight(3.5);
+        p.line(-42, eyeY - 16 - mouthOpen * 0.03, -12, eyeY - 20);
+        p.line(12, eyeY - 20, 42, eyeY - 16 - mouthOpen * 0.03);
+
+        // 코
+        p.stroke(120, 90, 70);
+        p.strokeWeight(1.8);
+        p.line(0, eyeY + 2, 0, 24);
+        p.arc(0, 24, 16, 8, 0, p.PI);
+
+        // 입
+        p.noStroke();
+        p.fill(140, 40, 50);
+        p.ellipse(0, 52, 44, mouthOpen);
+        p.fill(255, 120);
+        p.ellipse(0, 50, 24, 4);
+
+        // 볼터치
+        p.noStroke();
+        p.fill(255, 120, 120, 60);
+        p.ellipse(-44, 36, 18, 12);
+        p.ellipse(44, 36, 18, 12);
+      }
+
+      function drawLeftArm() {
+        p.push();
+        p.stroke(70);
+        p.strokeWeight(10);
+        p.strokeCap(p.ROUND);
+
+        let shoulder = p.createVector(-62, 105);
+        shoulder.rotate(p.radians(tilt));
+        p.translate(shoulder.x, shoulder.y);
+
+        let a1 = -p.HALF_PI * 0.4; // 고정 각도
+        let elbow = p5.Vector.fromAngle(a1, 70);
+        p.line(0, 0, elbow.x, elbow.y);
+
+        let a2 = a1 + 0.25;
+        p.translate(elbow.x, elbow.y);
+        let hand = p5.Vector.fromAngle(a2, 60);
+        p.line(0, 0, hand.x, hand.y);
+
+        p.noStroke();
+        p.fill(247, 222, 198);
+        p.ellipse(hand.x, hand.y, 22, 22);
+        p.pop();
+      }
+
+      function drawRightArm() {
+        p.push();
+        p.stroke(70);
+        p.strokeWeight(10);
+        p.strokeCap(p.ROUND);
+
+        let shoulder = p.createVector(62, 105);
+        shoulder.rotate(p.radians(tilt));
+        p.translate(shoulder.x, shoulder.y);
+
+        let targetAngle = -p.PI / 6;
+        let upper = p5.Vector.fromAngle(targetAngle, 72);
+        p.line(0, 0, upper.x, upper.y);
+
+        p.translate(upper.x, upper.y);
+        let lower = p5.Vector.fromAngle(targetAngle + 0.2, 62);
+        p.line(0, 0, lower.x, lower.y);
+
+        p.noStroke();
+        p.fill(247, 222, 198);
+        p.ellipse(lower.x, lower.y, 22, 22);
+        p.pop();
+      }
+    };
+
+    /*************************************
+     * Homework 3 – Interactive Human
+     * (질문에 제공한 코드 기반)
+     *************************************/
+    const sketch3 = (p) => {
+      let headX, headY;
+      let tilt = 0;
+      let mouthOpen = 10;
+      let isBlinking = false;   // 사용 안 해도 원래 변수 유지
+      let blinkHold = 0;        // 사용 안 해도 원래 변수 유지
+      let jumpY = 0, jumpV = 0;
+      let gravity = 0.8;
+      let waveArm = 0;
+      let recNotice = 0;
+
+      p.setup = () => {
+        p.createCanvas(480, 480);
+        p.frameRate(24);
+        headX = p.width / 2;
+        headY = p.height * 0.55;
+      };
+
+      p.draw = () => {
+        p.background(242, 246, 255);
+        p.noStroke();
+        p.fill(224, 232, 240);
+        p.rect(0, p.height * 0.82, p.width, p.height * 0.18);
+
+        // 점프 물리
+        jumpV += gravity;
+        jumpY += jumpV;
+        if (headY + jumpY >= p.height * 0.55) {
+          jumpY = 0;
+          jumpV = 0;
+        }
+
+        waveArm += 0.08;
+
+        p.push();
+        p.translate(headX, headY + jumpY);
+        p.rotate(p.radians(tilt));
+        drawBody();
+        drawNeck();
+        drawHead();
+        drawLeftArm();
+        drawRightArm();
+        p.pop();
+
+        drawHUD();
+      };
+
+      function drawBody() {
+        p.rectMode(p.CENTER);
+        p.noStroke();
+        p.fill(84, 140, 255);
+        p.rect(0, 150, 150, 170, 22);
+        p.fill(250);
+        p.quad(-35, 110, 35, 110, 10, 140, -10, 140);
+        p.fill(230);
+        p.rect(0, 150, 8, 150, 3);
+        p.fill(210);
+        p.ellipse(0, 120, 8, 8);
+        p.ellipse(0, 150, 8, 8);
+        p.ellipse(0, 180, 8, 8);
+      }
+
+      function drawNeck() {
+        p.fill(245, 214, 188);
+        p.rectMode(p.CENTER);
+        p.rect(0, 95, 42, 28, 8);
+      }
+
+      function drawHead() {
+        p.noStroke();
+        p.fill(247, 222, 198);
+        p.ellipse(0, 22, 140, 165);
+        p.fill(247, 222, 198);
+        p.ellipse(-70, 28, 22, 28);
+        p.ellipse(70, 28, 22, 28);
+
+        p.noStroke();
+        p.fill(40, 40, 50);
+        p.arc(0, -6, 150, 120, p.PI, p.TWO_PI);
+        p.quad(-60, -4, 60, -4, 50, 10, -50, 10);
+
+        p.stroke(255, 255, 255, 40);
+        p.strokeWeight(2);
+        p.line(0, -8, 0, 2);
+
+        const eyeY = 6;
+        p.noStroke();
+        p.fill(255);
+        p.ellipse(-26, eyeY, 30, 20);
+        p.ellipse(26, eyeY, 30, 20);
+
+        const gL = getGaze(-26, eyeY, 7, 8);
+        const gR = getGaze(26, eyeY, 7, 8);
+
+        p.fill(30);
+        if (!isBlinking) {
+          p.ellipse(gL.x, gL.y, 10, 10);
+          p.ellipse(gR.x, gR.y, 10, 10);
+        } else {
+          p.fill(247, 222, 198);
+          p.rect(-26, eyeY, 32, 16, 6);
+          p.rect(26, eyeY, 32, 16, 6);
+        }
+
+        p.stroke(30);
+        p.strokeWeight(3.5);
+        p.line(-42, eyeY - 16 - mouthOpen * 0.03, -12, eyeY - 20);
+        p.line(12, eyeY - 20, 42, eyeY - 16 - mouthOpen * 0.03);
+
+        p.stroke(120, 90, 70);
+        p.strokeWeight(1.8);
+        p.line(0, eyeY + 2, 0, 24);
+        p.arc(0, 24, 16, 8, 0, p.PI);
+
+        p.noStroke();
+        p.fill(140, 40, 50);
+        p.ellipse(0, 52, 44, mouthOpen);
+        p.fill(255, 120);
+        p.ellipse(0, 50, 24, 4);
+
+        p.noStroke();
+        p.fill(255, 120, 120, 60);
+        p.ellipse(-44, 36, 18, 12);
+        p.ellipse(44, 36, 18, 12);
+      }
+
+      function drawLeftArm() {
+        p.push();
+        p.stroke(70);
+        p.strokeWeight(10);
+        p.strokeCap(p.ROUND);
+        let shoulder = p.createVector(-62, 105);
+        shoulder.rotate(p.radians(tilt));
+        p.translate(shoulder.x, shoulder.y);
+        let a1 = -p.HALF_PI + p.sin(waveArm) * 0.45;
+        let elbow = p5.Vector.fromAngle(a1, 70);
+        p.line(0, 0, elbow.x, elbow.y);
+        let a2 = a1 + 0.35 * p.sin(waveArm);
+        p.translate(elbow.x, elbow.y);
+        let hand = p5.Vector.fromAngle(a2, 60);
+        p.line(0, 0, hand.x, hand.y);
+        p.noStroke();
+        p.fill(247, 222, 198);
+        p.ellipse(hand.x, hand.y, 22, 22);
+        p.pop();
+      }
+
+      function drawRightArm() {
+        p.push();
+        p.stroke(70);
+        p.strokeWeight(10);
+        p.strokeCap(p.ROUND);
+        let shoulder = p.createVector(62, 105);
+        shoulder.rotate(p.radians(tilt));
+        p.translate(shoulder.x, shoulder.y);
+        let target = p.atan2(p.mouseY - (headY + jumpY), p.mouseX - headX);
+        let upper = p5.Vector.fromAngle(target - 0.08, 72);
+        p.line(0, 0, upper.x, upper.y);
+        p.translate(upper.x, upper.y);
+        let lower = p5.Vector.fromAngle(target + 0.12, 62);
+        p.line(0, 0, lower.x, lower.y);
+        p.noStroke();
+        p.fill(247, 222, 198);
+        p.ellipse(lower.x, lower.y, 22, 22);
+        p.pop();
+      }
+
+      function drawHUD() {
+        p.noStroke();
+        p.fill(0, 120);
+        p.textSize(12);
+        p.textAlign(p.LEFT, p.TOP);
+        p.text(
+          '마우스: 시선/오른팔  ←/→ 고개  ↑/↓ 입  Space 점프  g: 10초 GIF',
+          10, 10
+        );
+
+        if (recNotice > 0) {
+          p.fill(255, 0, 0, p.map(recNotice, 0, 30, 0, 220));
+          p.ellipse(p.width - 20, 20, 12, 12);
+          p.fill(255, 0, 0, p.map(recNotice, 0, 30, 0, 220));
+          p.textAlign(p.RIGHT, p.TOP);
+          p.text('REC (10s)', p.width - 40, 12);
+          recNotice--;
+        }
+      }
+
+      function getGaze(cx, cy, rx, ry) {
+        let vx = p.mouseX - headX;
+        let vy = p.mouseY - headY;
+        let m = Math.sqrt(vx * vx + vy * vy) || 1;
+        vx /= m;
+        vy /= m;
+        return { x: cx + vx * rx, y: cy + vy * ry };
+      }
+
+      p.keyPressed = () => {
+        if (p.keyCode === p.LEFT_ARROW)  tilt = Math.max(tilt - 5, -20);
+        if (p.keyCode === p.RIGHT_ARROW) tilt = Math.min(tilt + 5,  20);
+        if (p.keyCode === p.UP_ARROW)    mouthOpen = Math.min(mouthOpen + 3, 36);
+        if (p.keyCode === p.DOWN_ARROW)  mouthOpen = Math.max(mouthOpen - 3,  8);
+        if (p.key === ' ') {
+          if (jumpY === 0) jumpV = -12;
+        }
+        if (p.key === 'g' || p.key === 'G') {
+          recNotice = 30;
+          if (typeof saveGif === 'function') {
+            try {
+              // p5.gif 라이브러리가 전역 saveGif 제공
+              saveGif('human_caricature', 10);
+            } catch (e) {}
+          }
+        }
+      };
+    };
+
+    /*************************************
+     * Homework 4 – Animated Dora
+     * (질문에 제공한 코드 기반)
+     *************************************/
+    const sketch4 = (p) => {
+      let SIZE = 300;
+      let lastBlink = 0;
+      let blinkDur = 120;
+
+      p.setup = () => {
+        p.pixelDensity(1);
+        p.createCanvas(300, 300);
+        p.frameRate(15);
+        p.colorMode(p.HSB, 360, 100, 100, 100);
+      };
+
+      p.draw = () => {
+        let t = p.millis() * 0.001;
+        let hue1 = (t * 20) % 360;
+        let hue2 = (60 + t * 20) % 360;
+        let c1 = p.color(hue1, 40, 95);
+        let c2 = p.color(hue2, 40, 95);
+        for (let y = 0; y < p.height; y++) {
+          let amt = y / (p.height - 1);
+          p.stroke(p.lerpColor(c1, c2, amt));
+          p.line(0, y, p.width, y);
+        }
+
+        let headSwing = p.sin(p.frameCount * 0.04) * 6;
+        let facePulse = 1.0 + 0.02 * p.sin(p.frameCount * 0.05);
+
+        p.push();
+        p.translate(p.width / 2 + headSwing, p.height / 2);
+        p.scale(facePulse);
+
+        let headHue =
+          (210 + 20 * p.sin(p.frameCount * 0.03) + 360) % 360;
+        p.stroke(0);
+        p.strokeWeight(6);
+        p.fill(headHue, 76, 100);
+        p.circle(0, 0, SIZE);
+
+        p.fill(0, 0, 100);
+        p.ellipse(0, SIZE * 0.14, SIZE * 0.80, SIZE * 0.68);
+
+        drawEyes();
+        drawNose();
+        drawWhiskers();
+        drawCollarAndBell();
+        drawMouth();
+        p.pop();
+      };
+
+      function drawEyes() {
+        if (p.frameCount - lastBlink > 120 + intRandom(60, 180)) {
+          lastBlink = p.frameCount;
+          blinkDur = intRandom(6, 12);
+        }
+        let isBlinking = (p.frameCount - lastBlink) < blinkDur;
+
+        p.stroke(0);
+        p.strokeWeight(5);
+        p.fill(0, 0, 100);
+        let eyeW = SIZE * 0.22, eyeH = SIZE * 0.30;
+        let eyeY = -SIZE * 0.12;
+        let eyeDX = SIZE * 0.115;
+        let blinkScale = isBlinking ? 0.08 : 1.0;
+        p.ellipse(-eyeDX, eyeY, eyeW, eyeH * blinkScale);
+        p.ellipse( eyeDX, eyeY, eyeW, eyeH * blinkScale);
+
+        p.fill(0, 0, 0);
+        let pupilR = SIZE * 0.05;
+        p.circle(-eyeDX, eyeY, pupilR);
+        p.circle( eyeDX, eyeY, pupilR);
+      }
+
+      function drawNose() {
+        let noseBase = SIZE * 0.12;
+        let noseR = noseBase * (1.0 + 0.06 * p.sin(p.frameCount * 0.12));
+        p.fill(0, 84, 90);
+        p.stroke(0);
+        p.strokeWeight(5);
+        p.circle(0, -SIZE * 0.03, noseR);
+        p.noStroke();
+        p.fill(0, 0, 100, 90);
+        p.ellipse(noseR * 0.28, -SIZE * 0.05, noseR * 0.32, noseR * 0.20);
+        p.stroke(0);
+        p.strokeWeight(5);
+        p.line(0, 0, 0, SIZE * 0.21);
+      }
+
+      function drawWhiskers() {
+        p.strokeWeight(5);
+        let wig = p.sin(p.frameCount * 0.06) * 6;
+        p.stroke(0);
+        p.line(-SIZE * 0.06,  SIZE * 0.02,  -SIZE * 0.30, -SIZE * 0.02 + wig * 0.2);
+        p.line(-SIZE * 0.06,  SIZE * 0.09,  -SIZE * 0.30,  SIZE * 0.09 + wig * 0.4);
+        p.line(-SIZE * 0.06,  SIZE * 0.16,  -SIZE * 0.30,  SIZE * 0.22 + wig * 0.6);
+        p.line( SIZE * 0.06,  SIZE * 0.02,   SIZE * 0.30, -SIZE * 0.02 - wig * 0.2);
+        p.line( SIZE * 0.06,  SIZE * 0.09,   SIZE * 0.30,  SIZE * 0.09 - wig * 0.4);
+        p.line( SIZE * 0.06,  SIZE * 0.16,   SIZE * 0.30,  SIZE * 0.22 - wig * 0.6);
+      }
+
+      function drawMouth() {
+        p.noFill();
+        p.stroke(0);
+        p.strokeWeight(5);
+        let smileY = SIZE * 0.21;
+        p.arc(0, smileY, SIZE * 0.52, SIZE * 0.32, 0.15 * p.PI, 0.85 * p.PI);
+      }
+
+      function drawCollarAndBell() {
+        let cA = p.color(0, 80, 90);
+        let cB = p.color(15, 90, 90);
+        let amt = (p.sin(p.frameCount * 0.05) + 1) / 2;
+        let collarCol = p.lerpColor(cA, cB, amt);
+        p.stroke(0);
+        p.strokeWeight(6);
+        p.fill(collarCol);
+        p.rectMode(p.CENTER);
+        p.rect(0, SIZE * 0.39, SIZE * 0.86, SIZE * 0.11, SIZE * 0.06);
+
+        let swing = p.cos(p.frameCount * 0.07) * 6;
+        p.push();
+        p.translate(swing, 0);
+        let bellHue =
+          (50 + 10 * p.sin(p.frameCount * 0.04) + 360) % 360;
+        p.fill(bellHue, 90, 100);
+        p.ellipse(0, SIZE * 0.47, SIZE * 0.15, SIZE * 0.12);
+        p.circle(0, SIZE * 0.47, SIZE * 0.12);
+        p.strokeWeight(4);
+        p.stroke(0);
+        p.line(0, SIZE * 0.435, 0, SIZE * 0.505);
+        p.noStroke();
+        p.fill(0, 0, 0);
+        p.circle(0, SIZE * 0.505, SIZE * 0.03);
+        p.pop();
+      }
+
+      // p5 random이 인스턴스 안에서는 p.random 사용, 정수 변환 보조 함수
+      function intRandom(min, max) {
+        return Math.floor(p.random(min, max));
+      }
+
+      p.keyPressed = () => {
+        if (p.key === 'g' || p.key === 'G') {
+          if (typeof saveGif === 'function') {
+            try {
+              saveGif('dora_animated', 10);
+            } catch (e) {}
+          }
+        }
+      };
+    };
+
+    // 네 개 스케치를 각 컨테이너에 마운트
+    new p5(sketch1, 'sketch1');
+    new p5(sketch4, 'sketch4');
+    new p5(sketch2, 'sketch2');
+    new p5(sketch3, 'sketch3');
+  </script>
+</body>
+</html>
